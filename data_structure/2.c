@@ -195,11 +195,17 @@ int deQueue(linkQueue *const queue, char *e)
         return 0;
     }
 
-    if (queue->front != NULL)
+    if (queue->front != queue->rear)
     {
-        *e = queue->front->data;
-        queueNode *p = queue->front;
-        queue->front = queue->front->next;
+        queueNode *p = queue->front->next;
+        *e = p->data;
+        
+        queue->front->next = p->next;
+        if (queue->rear == p)
+        {
+            queue->rear = queue->front;
+        }
+
         free(p);
         return 1;
     }
@@ -333,7 +339,7 @@ int main(void)
             }
             break;
         }
-        
+
     } while (select);
     destroyStack(&myStack);
     printf("栈测试退出");
