@@ -134,6 +134,108 @@ nodeLink BStreeSearch(nodeLink root, int target)
     return target_point;
 }
 
+nodeLink deleteBStree(nodeLink root, int data)
+{
+    if (root == NULL)
+    {
+        return NULL;
+    }
+    nodeLink deleteNode = BStreeSearch(root, data);
+    if (deleteNode != NULL)
+    {
+        //查找被删除节点的双亲节点中的指针变量
+        nodeLink p = root;
+        nodeLink *pLink = NULL;
+        while (1)
+        {
+            if (p->lchild == deleteNode)
+            {
+                pLink = &(p->lchild);
+                break;
+            }
+            else if (p->rchild == deleteNode)
+            {
+                pLink = &(p->rchild);
+                break;
+            }
+
+            if (deleteNode->data < p->data)
+            {
+                p = p->lchild;
+            }
+            else
+            {
+                p = p->rchild;
+            }
+        }
+
+        //根据被删除节点的子树情况进行删除
+        if (deleteNode->lchild == NULL && deleteNode->rchild == NULL)
+        {
+            if (pLink != NULL)
+            {
+                *pLink = NULL;
+            }
+            else if (deleteNode == root) //被删节点为根节点
+            {
+                root = NULL;
+            }
+
+            free(deleteNode);
+        }
+        else if (deleteNode->lchild == NULL)
+        {
+            if (pLink != NULL)
+            {
+                *pLink = deleteNode->rchild;
+            }
+            else if (deleteNode == root) //被删节点为根节点
+            {
+                root = deleteNode->rchild;
+            }
+            free(deleteNode);
+        }
+        else if (deleteNode->rchild == NULL)
+        {
+            if (pLink != NULL)
+            {
+                *pLink = deleteNode->lchild;
+            }
+            else if (deleteNode == root) //被删节点为根节点
+            {
+                root = deleteNode->lchild;
+            }
+            free(deleteNode);
+        }
+        else
+        {
+            //找到左子树的最右端的节点
+            nodeLink r = deleteNode->lchild;
+            nodeLink rp = NULL;
+            while (r->rchild == NULL)
+            {
+                rp = r;
+                r = r->rchild;
+            }
+            //进行替换
+            rp->rchild = r->lchild;
+            // r 获取deleteNode的孩子关系
+            r->lchild = deleteNode->lchild;
+            r->rchild = deleteNode->rchild;
+            // r 获取 deleteNode 的双亲关系
+            if (pLink != NULL)
+            {
+                *pLink = r;
+            }
+            else if (deleteNode == root) //被删节点为根节点
+            {
+                root = r;
+            }
+            free(deleteNode);
+        }
+    }
+    return root;
+}
 void displaySet(int set[], int length)
 {
     for (int i = 0; i < length; i++)
@@ -213,6 +315,7 @@ int main(void)
     root = insertBStree(root, target);
     displayBStreeByPreOrder(root);
     printf("\n");
+
     printf("==查找测试==\n");
     printf("请输入要查找的整数:\n");
     scanf("%d", &target);
@@ -225,4 +328,13 @@ int main(void)
     {
         printf("没有找到%d", target);
     }
+    printf("\n");
+
+    printf("==删除测试==\n");
+    displayBStreeByPreOrder(root);
+    printf("请输入要删除的整数（如果是不存在的数，二叉排序树将不会有任何改变）:\n");
+    scanf("%d", &target);
+    printf("删除节点后的二叉排序树：\n");
+    root = deleteBStree(root, target);
+    displayBStreeByPreOrder(root);
 }
